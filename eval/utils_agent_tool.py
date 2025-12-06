@@ -18,7 +18,63 @@ import uuid as uuid_lib
 # from utils_gpt import chat_gemini
 from utils_vllm import chat_vllm as chat_gemini
 
-from gpt_researcher.search_worker import run_search
+# Try to import run_search from gpt_researcher, fallback to local implementation
+try:
+    from gpt_researcher.search_worker import run_search
+except ImportError:
+    # Local implementation using Tavily API
+    def run_search(query: str, retriever_name: str = 'tavily', max_results: int = 10, expand: bool = False) -> List[Dict[str, Any]]:
+        """
+        Execute a web search using Tavily API.
+        
+        Args:
+            query: Search query string
+            retriever_name: Retriever name (default: 'tavily')
+            max_results: Maximum number of results to return
+            expand: Whether to expand the query (not used in this implementation)
+        
+        Returns:
+            List of search result dictionaries with 'title', 'url', 'content' keys
+        """
+        import os
+        import requests
+        
+        api_key = os.getenv('TAVILY_API_KEY')
+        if not api_key:
+            raise ValueError(
+                "TAVILY_API_KEY is not set. Please set the TAVILY_API_KEY environment variable. "
+                "You can sign up for a free account at https://www.tavily.com/"
+            )
+        
+        if retriever_name != 'tavily':
+            raise ValueError(f"Unsupported retriever: {retriever_name}. Only 'tavily' is supported.")
+        
+        url = "https://api.tavily.com/search"
+        payload = {
+            "api_key": api_key,
+            "query": query,
+            "max_results": max_results,
+            "search_depth": "advanced"
+        }
+        
+        try:
+            response = requests.post(url, json=payload, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            
+            results = []
+            for item in data.get('results', []):
+                results.append({
+                    'title': item.get('title', ''),
+                    'url': item.get('url', ''),
+                    'content': item.get('content', ''),
+                    'score': item.get('score', 0.0)
+                })
+            
+            return results
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Tavily API request failed: {str(e)}")
+
 from utils import print_hl
 
 # Constants

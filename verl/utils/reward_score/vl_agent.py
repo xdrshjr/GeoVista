@@ -12,7 +12,7 @@ openai_api_key = "EMPTY"
 # ]
 # openai_api_base_list = ["http://29.225.242.25:18901/v1", "http://29.226.3.167:18901/v1"]
 # openai_api_base_list = ["http://29.177.193.220:18901/v1", "http://29.177.112.27:18901/v1"]
-openai_api_base_list = ["http://29.225.240.118:18901/v1"]
+openai_api_base_list = [os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")]
 try:
     client_list = []
     for api_base in openai_api_base_list:

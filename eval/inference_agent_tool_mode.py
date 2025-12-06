@@ -21,7 +21,6 @@ from datasets import load_dataset
 # from utils_gpt import chat_gemini
 from utils_vllm import chat_vllm as chat_gemini
 
-from gpt_researcher.search_worker import run_search
 from utils import print_hl
 
 # Constants
